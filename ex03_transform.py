@@ -14,19 +14,34 @@ transform的使用
         1. transforms.ToTensor() 输入: PIL Image`` or ``numpy.ndarray输出 torch.Tensor
         2. transforms.Normalize(param1， param2)
             ~输入: 设定的n个通道的均值和标准差
-            ~用给定的平均值和标准差对张量图像进行归一化处理, 该变换将对输入的每个通道进行归一化处理
+            ~用给定的平均值和标准差对tensor图像进行归一化处理, 该变换将对输入的每个通道进行归一化处理
             ~归一化的目的是使图像中的像素值具有可比性，这样可以使图像在不同的处理步骤中更容易进行比较和计算。此外，归一化还可以减少图像中像素值
         的范围，使得图像更容易被计算机处理，并且可以减少数值溢出的风险。
+        3.transforms.Resize((param1, param2)) 参数：给定的（H, W）
+            ~用给定的（H，W）对 PIL Image进行尺寸变换，返回值仍然是 PIL Image
+        4.transforms.Compose([transforms操作1, ... , transforms操作2])
+            ~将多个transforms操作组合在一起，可以简化代码，使转换过程更加清晰和易于维护
+            ~e.g.:transforms.Compose([transforms.Resize((1080, 1080)), transforms.ToTensor()])
 ************************************************************************************************************************
 """
 from torchvision import transforms
 from PIL import Image
-from ex02_TensorBoard import IMAGE_URL
+from tensorboardX import SummaryWriter
+IMAGE_URL = "animals/labrador.jpg"
 
 
 img = Image.open(IMAGE_URL)
-print(type(img))
-img_tensor = transforms.ToTensor()(img)
-print(type(img_tensor))
-print(img_tensor.shape)
+writer = SummaryWriter("log_img")
 
+# transforms.ToTensor() 类的使用
+img_tensor = transforms.ToTensor()(img)  # <class 'torch.Tensor'>
+
+# transforms.Normalize()类的使用
+img_normalize = transforms.Normalize([10, 2, 6], [2, 1, 8])(img_tensor)
+writer.add_image("by transforms.Normalize", img_normalize, 2)
+
+
+# transforms.Compose()类的使用
+img_compose = transforms.Compose([transforms.ToTensor(), transforms.Normalize([1, 2, 4], [1, 5, 8])])(img)
+writer.add_image("by transforms.Normalize", img_normalize, 3)
+writer.close()
